@@ -14,7 +14,7 @@ decaf/
 submission/
 cfg/
 darknet
-
+*.weight
 # OS Generated #
 .DS_Store*
 ehthumbs.db

@@ -81,7 +81,7 @@ void forward_detection_layer(const detection_layer l, network_state state)
 
                 int best_index = -1;
                 float best_iou = 0;
-                float best_rmse = 20;
+                float best_rmse = 7;
 
                 if (!is_obj){
                     continue;

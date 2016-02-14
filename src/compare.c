@@ -34,7 +34,7 @@ void train_compare(char *cfgfile, char *weightfile)
     args.w = net.w;
     args.h = net.h;
     args.paths = paths;
-    args.classes = 20;
+    args.classes = 7;
     args.n = imgs;
     args.m = N;
     args.d = &buffer;
@@ -106,7 +106,7 @@ void validate_compare(char *filename, char *weightfile)
     args.w = net.w;
     args.h = net.h;
     args.paths = paths;
-    args.classes = 20;
+    args.classes = 7;
     args.n = num;
     args.m = 0;
     args.d = &buffer;
@@ -131,7 +131,7 @@ void validate_compare(char *filename, char *weightfile)
         matrix pred = network_predict_data(net, val);
         int j,k;
         for(j = 0; j < val.y.rows; ++j){
-            for(k = 0; k < 20; ++k){
+            for(k = 0; k < 7; ++k){
                 if(val.y.vals[j][k*2] != val.y.vals[j][k*2+1]){
                     ++total;
                     if((val.y.vals[j][k*2] < val.y.vals[j][k*2+1]) == (pred.vals[j][k*2] < pred.vals[j][k*2+1])){
@@ -258,7 +258,7 @@ void SortMaster3000(char *filename, char *weightfile)
 
 void BattleRoyaleWithCheese(char *filename, char *weightfile)
 {
-    int classes = 20;
+    int classes = 7;
     int i,j;
     network net = parse_network_cfg(filename);
     if(weightfile){
@@ -316,7 +316,7 @@ void BattleRoyaleWithCheese(char *filename, char *weightfile)
                 bbox_fight(net, boxes+i*2, boxes+i*2+1, classes, class);
             }
             qsort(boxes, N, sizeof(sortable_bbox), elo_comparator);
-            if(round <= 20) N = (N*9/10)/2*2;
+            if(round <= 7) N = (N*9/10)/2*2;
 
             printf("Round: %f secs, %d remaining\n", sec(clock()-round_time), N);
         }

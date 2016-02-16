@@ -57,6 +57,7 @@ void train_yolo(char *cfgfile, char *weightfile)
     pthread_t load_thread = load_data_in_thread(args);
     clock_t time;
     //while(i*imgs < N*120){
+    printf("\033[93mmax batch\033[00m: %d\n",net.max_batches);
     while(get_current_batch(net) < net.max_batches){
         i += 1;
         time=clock();

@@ -29,7 +29,8 @@ char **get_random_paths(char **paths, int n, int m)
     for(i = 0; i < n; ++i){
         int index = rand_r(&data_seed)%m;
         random_paths[i] = paths[index];
-        if(i == 0) printf("%s\n", paths[index]);
+        if(i == 0) printf("0/%d %s\n", n, paths[index]);
+	//printf("%s\n", paths[index]);
     }
     return random_paths;
 }

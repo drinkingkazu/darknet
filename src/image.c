@@ -791,9 +791,13 @@ image load_image_cv(char *filename, int channels)
         printf("Cannot load image \"%s\"\n", filename);
         exit(0);
     }
+
     image out = ipl_to_image(src);
+
     cvReleaseImage(&src);
+
     rgbgr_image(out);
+
     return out;
 }
 
@@ -802,7 +806,8 @@ image load_image_cv(char *filename, int channels)
 
 image load_image_stb(char *filename, int channels)
 {
-    int w, h, c;
+  printf("in stb... why?\n");
+  int w, h, c;
     unsigned char *data = stbi_load(filename, &w, &h, &c, channels);
     if (!data) {
         fprintf(stderr, "Cannot load image \"%s\"\nSTB Reason: %s\n", filename, stbi_failure_reason());
@@ -826,6 +831,7 @@ image load_image_stb(char *filename, int channels)
 
 image load_image(char *filename, int w, int h, int c)
 {
+  //printf("load_image\n");
 #ifdef OPENCV
     image out = load_image_cv(filename, c);
 #else

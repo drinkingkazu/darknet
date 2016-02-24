@@ -21,3 +21,7 @@ ehthumbs.db
 Icon?
 Thumbs.db
 *.swp
+*.pdf
+*.png
+*.py
+*.weights

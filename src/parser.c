@@ -726,7 +726,7 @@ void save_weights_upto(network net, char *filename, int cutoff)
     fprintf(stderr, "Saving weights to %s\n", filename);
     FILE *fp = fopen(filename, "w");
     if(!fp) file_error(filename);
-
+    fprintf(stderr, "cutoff....... %d\n", cutoff);
     int major = 0;
     int minor = 1;
     int revision = 0;
@@ -826,6 +826,8 @@ void load_weights_upto(network *net, char *filename, int cutoff)
     int transpose = (major > 1000) || (minor > 1000);
 
     int i;
+    printf("net->n : %d \n" , net->n);
+    printf("cutoff : %d \n" , cutoff);
     for(i = 0; i < net->n && i < cutoff; ++i){
         layer l = net->layers[i];
         if (l.dontload) continue;

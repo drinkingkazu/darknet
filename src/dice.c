@@ -2,7 +2,9 @@
 #include "utils.h"
 #include "parser.h"
 
-char *dice_labels[] = {"face1","face2","face3","face4","face5","face6"};
+//char *aho_labels[] = {"n03980874","n01440764","n02794156"};
+//char *dice_labels[] = {"face1","face2","face3","face4","face5","face6"};
+char *dice_labels[] =  {"n03980874","n01440764","n02794156"};
 
 void train_dice(char *cfgfile, char *weightfile)
 {
@@ -10,24 +12,29 @@ void train_dice(char *cfgfile, char *weightfile)
     srand(time(0));
     float avg_loss = -1;
     char *base = basecfg(cfgfile);
-    char *backup_directory = "/home/pjreddie/backup/";
+    char *backup_directory = "/mnt/data1/backup/";
     printf("%s\n", base);
     network net = parse_network_cfg(cfgfile);
     if(weightfile){
         load_weights(&net, weightfile);
     }
     printf("Learning Rate: %g, Momentum: %g, Decay: %g\n", net.learning_rate, net.momentum, net.decay);
-    int imgs = 1024;
-    int i = *net.seen/imgs;
+    //    int imgs = 1024;
+
+    
     char **labels = dice_labels;
-    list *plist = get_paths("data/dice/dice.train.list");
+    list *plist   = get_paths ("data/vic.train.inet");
+    //list *plist = get_paths("data/dice/dice.train.list");
+    int imgs =  plist->size;
+    int i = *net.seen/imgs;
     char **paths = (char **)list_to_array(plist);
     printf("%d\n", plist->size);
     clock_t time;
     while(1){
         ++i;
         time=clock();
-        data train = load_data(paths, imgs, plist->size, labels, 6, net.w, net.h);
+	printf("Loading data..\n");
+        data train = load_data(paths, imgs, plist->size, labels, 3, net.w, net.h);
         printf("Loaded: %lf seconds\n", sec(clock()-time));
 
         time=clock();

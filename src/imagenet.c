@@ -6,24 +6,32 @@
 #include "opencv2/highgui/highgui_c.h"
 #endif
 
+
+char *aho_labels[] = {"eminus","proton","muminus","pizero"};
+//char *aho_labels[] = {"eminus","proton"};
+//char *aho_labels[] = {"n03980874","n01440764","n02794156"};
+
 void train_imagenet(char *cfgfile, char *weightfile)
 {
-    data_seed = time(0);
     srand(time(0));
+    data_seed = time(0);
     float avg_loss = -1;
     char *base = basecfg(cfgfile);
-    char *backup_directory = "/home/pjreddie/backup/";
+    char *backup_directory = "/mnt/data1/backup/";
     printf("%s\n", base);
     network net = parse_network_cfg(cfgfile);
     if(weightfile){
         load_weights(&net, weightfile);
     }
     printf("Learning Rate: %g, Momentum: %g, Decay: %g\n", net.learning_rate, net.momentum, net.decay);
-    int imgs = 1024;
-    char **labels = get_labels("data/inet.labels.list");
-    list *plist = get_paths("data/inet.train.list");
+    //int imgs = 1024;
+    /* char **labels = get_labels("data/ub_inet.labels.list"); */
+    char **labels = aho_labels;
+    //list  *plist  = get_paths ("data/vic.train.inet");
+    list  *plist  = get_paths ("data/particles.txt");
+    
     char **paths = (char **)list_to_array(plist);
-    printf("%d\n", plist->size);
+    printf("N is %d\n", plist->size);
     int N = plist->size;
     clock_t time;
     pthread_t load_thread;
@@ -34,27 +42,32 @@ void train_imagenet(char *cfgfile, char *weightfile)
     args.w = net.w;
     args.h = net.h;
     args.paths = paths;
-    args.classes = 1000;
-    args.n = imgs;
+    args.classes = 4;
+    args.n = 1024;
     args.m = N;
     args.labels = labels;
     args.d = &buffer;
     args.type = CLASSIFICATION_DATA;
-
+    printf("Loading data into thread...\n");
     load_thread = load_data_in_thread(args);
     int epoch = (*net.seen)/N;
     while(get_current_batch(net) < net.max_batches || net.max_batches == 0){
         time=clock();
+	printf("Joining...\n");
         pthread_join(load_thread, 0);
+	printf("Train=buffer\n");
         train = buffer;
-
+	printf("Loading data into thread again...\n");
         load_thread = load_data_in_thread(args);
         printf("Loaded: %lf seconds\n", sec(clock()-time));
         time=clock();
-        float loss = train_network(net, train);
+	printf("Training...\n");
+	float loss = train_network(net, train);
         if(avg_loss == -1) avg_loss = loss;
         avg_loss = avg_loss*.9 + loss*.1;
-        printf("%d, %.3f: %f, %f avg, %f rate, %lf seconds, %d images\n", get_current_batch(net), (float)(*net.seen)/N, loss, avg_loss, get_current_rate(net), sec(clock()-time), *net.seen);
+        printf("%d, %.3f: %f, %f avg, %f rate, %lf seconds, %d images\n",
+	       get_current_batch(net), (float)(*net.seen)/N, loss, avg_loss, get_current_rate(net), sec(clock()-time), *net.seen);
+	
         free_data(train);
         if(*net.seen/N > epoch){
             epoch = *net.seen/N;
@@ -62,7 +75,7 @@ void train_imagenet(char *cfgfile, char *weightfile)
             sprintf(buff, "%s/%s_%d.weights",backup_directory,base, epoch);
             save_weights(net, buff);
         }
-        if(*net.seen%1000 == 0){
+        if(*net.seen%100 == 0){
             char buff[256];
             sprintf(buff, "%s/%s.backup",backup_directory,base);
             save_weights(net, buff);
@@ -75,7 +88,7 @@ void train_imagenet(char *cfgfile, char *weightfile)
     pthread_join(load_thread, 0);
     free_data(buffer);
     free_network(net);
-    free_ptrs((void**)labels, 1000);
+    free_ptrs((void**)labels, 4);
     free_ptrs((void**)paths, plist->size);
     free_list(plist);
     free(base);
@@ -90,9 +103,11 @@ void validate_imagenet(char *filename, char *weightfile)
     }
     srand(time(0));
 
-    char **labels = get_labels("data/inet.labels.list");
+    //char **labels = get_labels("data/ub_inet.labels.list");
+    char **labels = aho_labels;
     //list *plist = get_paths("data/inet.suppress.list");
-    list *plist = get_paths("data/inet.val.list");
+    //list *plist = get_paths("data/ub_inet.val.list");
+    list *plist = get_paths("data/particles_valid.txt");
 
     char **paths = (char **)list_to_array(plist);
     int m = plist->size;
@@ -110,7 +125,7 @@ void validate_imagenet(char *filename, char *weightfile)
     args.w = net.w;
     args.h = net.h;
     args.paths = paths;
-    args.classes = 1000;
+    args.classes = 3;
     args.n = num;
     args.m = 0;
     args.labels = labels;
@@ -133,8 +148,8 @@ void validate_imagenet(char *filename, char *weightfile)
         printf("Loaded: %d images in %lf seconds\n", val.X.rows, sec(clock()-time));
 
         time=clock();
-        float *acc = network_accuracies(net, val, 5);
-        avg_acc += acc[0];
+        float *acc = network_accuracies(net, val, 4);
+        avg_acc  += acc[0];
         avg_top5 += acc[1];
         printf("%d: top1: %f, top5: %f, %lf seconds, %d images\n", i, avg_acc/i, avg_top5/i, sec(clock()-time), val.X.rows);
         free_data(val);
@@ -150,9 +165,9 @@ void test_imagenet(char *cfgfile, char *weightfile, char *filename)
     set_batch_network(&net, 1);
     srand(2222222);
     int i = 0;
-    char **names = get_labels("data/shortnames.txt");
+    char **names = get_labels("data/vic_shortnames.txt");
     clock_t time;
-    int indexes[10];
+    int indexes[3];
     char buff[256];
     char *input = buff;
     while(1){
@@ -169,9 +184,9 @@ void test_imagenet(char *cfgfile, char *weightfile, char *filename)
         float *X = im.data;
         time=clock();
         float *predictions = network_predict(net, X);
-        top_predictions(net, 10, indexes);
+        top_predictions(net, 3, indexes);
         printf("%s: Predicted in %f seconds.\n", input, sec(clock()-time));
-        for(i = 0; i < 10; ++i){
+        for(i = 0; i < 3; ++i){
             int index = indexes[i];
             printf("%s: %f\n", names[index], predictions[index]);
         }
@@ -190,7 +205,7 @@ void run_imagenet(int argc, char **argv)
     char *cfg = argv[3];
     char *weights = (argc > 4) ? argv[4] : 0;
     char *filename = (argc > 5) ? argv[5]: 0;
-    if(0==strcmp(argv[2], "test")) test_imagenet(cfg, weights, filename);
+    if     (0==strcmp(argv[2], "test"))   test_imagenet(cfg, weights, filename);
     else if(0==strcmp(argv[2], "train")) train_imagenet(cfg, weights);
     else if(0==strcmp(argv[2], "valid")) validate_imagenet(cfg, weights);
 }

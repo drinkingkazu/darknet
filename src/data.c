@@ -74,7 +74,7 @@ matrix load_image_paths(char **paths, int n, int w, int h)
     X.rows = n;
     X.vals = calloc(X.rows, sizeof(float*));
     X.cols = 0;
-
+    
     for(i = 0; i < n; ++i){
         image im = load_image_color(paths[i], w, h);
         X.vals[i] = im.data;
@@ -365,24 +365,28 @@ data load_data_captcha_encode(char **paths, int n, int m, int w, int h)
 
 void fill_truth(char *path, char **labels, int k, float *truth)
 {
-    int i;
+  /* printf("k is %d f\n",k); */
+  int i;
     memset(truth, 0, k*sizeof(float));
     int count = 0;
     for(i = 0; i < k; ++i){
-        if(strstr(path, labels[i])){
+      if(strstr(path, labels[i])){ // locate substring in labels
             truth[i] = 1;
             ++count;
         }
     }
+    /* printf("in fill truth -- path: %s - truth: %f\n",path,*truth); */
     if(count != 1) printf("Too many or too few labels: %d, %s\n", count, path);
 }
 
 matrix load_labels_paths(char **paths, int n, char **labels, int k)
 {
+  printf("n = %d",n);
+    
     matrix y = make_matrix(n, k);
     int i;
     for(i = 0; i < n && labels; ++i){
-        fill_truth(paths[i], labels, k, y.vals[i]);
+      fill_truth(paths[i], labels, k, y.vals[i]);
     }
     return y;
 }
@@ -688,12 +692,18 @@ data load_data_writing(char **paths, int n, int m, int w, int h, int out_w, int 
 
 data load_data(char **paths, int n, int m, char **labels, int k, int w, int h)
 {
-    if(m) paths = get_random_paths(paths, n, m);
-    data d;
+  printf("in load data\n");
+  if(m) paths = get_random_paths(paths, n, m);
+  printf("d\n");
+  data d;
     d.shallow = 0;
+    printf("e\n");
     d.X = load_image_paths(paths, n, w, h);
+    printf("f\n");
     d.y = load_labels_paths(paths, n, labels, k);
+    printf("g\n");
     if(m) free(paths);
+    printf("h\n");
     return d;
 }
 

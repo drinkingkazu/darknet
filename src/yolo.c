@@ -9,15 +9,18 @@
 #include "opencv2/highgui/highgui_c.h"
 #endif
 
-char *voc_names[] = {"eminus","gamma","pizero","muminus","piminus","kminus","proton"};
-image voc_labels[7];
+//char *voc_names[] = {"eminus","gamma","pizero","muminus","piminus","kminus","proton"};
+//char *voc_names[] = {"eminus","proton"};
+char *voc_names[] = {"eminus","proton","muminus","pizero"};
+//char *voc_names[] = {"eminus","proton","pizero","muminus"};
+image voc_labels[4];
 
 void train_yolo(char *cfgfile, char *weightfile)
 {
   //char *train_images = "/home/kterao/sw/darknet/larbys/train.txt";
-  char *train_images = "/mnt/disk0/kterao/larbys/train.txt";
-  char *backup_directory = "/mnt/disk0/kterao/larbys/";
-    srand(time(0));
+  char *train_images = "/mnt/data1/larbys_detect/train.txt";
+  char *backup_directory = "/mnt/data1/backup/";
+  srand(time(0));
     data_seed = time(0);
     char *base = basecfg(cfgfile);
     printf("%s\n", base);
@@ -73,7 +76,7 @@ void train_yolo(char *cfgfile, char *weightfile)
         avg_loss = avg_loss*.9 + loss*.1;
 
         printf("%d: %f, %f avg, %f rate, %lf seconds, %d images\n", i, loss, avg_loss, get_current_rate(net), sec(clock()-time), i*imgs);
-        if(i%1000==0 || i == 600){
+        if(i%100==0){
             char buff[256];
             sprintf(buff, "%s/%s_%d.weights", backup_directory, base, i);
             save_weights(net, buff);
@@ -99,6 +102,7 @@ void convert_yolo_detections(float *predictions, int classes, int num, int squar
             int box_index = side*side*(classes + num) + (i*num + n)*4;
             boxes[index].x = (predictions[box_index + 0] + col) / side * w;
             boxes[index].y = (predictions[box_index + 1] + row) / side * h;
+
             boxes[index].w = pow(predictions[box_index + 2], (square?2:1)) * w;
             boxes[index].h = pow(predictions[box_index + 3], (square?2:1)) * h;
             for(j = 0; j < classes; ++j){
@@ -347,14 +351,14 @@ void test_yolo(char *cfgfile, char *weightfile, char *filename, float thresh)
         if (nms) do_nms_sort(boxes, probs, l.side*l.side*l.n, l.classes, nms);
         //draw_detections(im, l.side*l.side*l.n, thresh, boxes, probs, voc_names, voc_labels, 20);
         draw_detections(im, l.side*l.side*l.n, thresh, boxes, probs, voc_names, 0, 7);
-        show_image(im, "predictions");
+        //show_image(im, "predictions");
         save_image(im, "predictions");
 
-        show_image(sized, "resized");
+        //show_image(sized, "resized");
         free_image(im);
         free_image(sized);
 #ifdef OPENCV
-        cvWaitKey(0);
+        //cvWaitKey(0);
         cvDestroyAllWindows();
 #endif
         if (filename) break;
@@ -408,9 +412,9 @@ void demo_yolo(char *cfgfile, char *weightfile, float thresh, int cam_index)
 void run_yolo(int argc, char **argv)
 {
     int i;
-    for(i = 0; i < 7; ++i){
+    for(i = 0; i < 4; ++i){
         char buff[256];
-        sprintf(buff, "/home/kterao/sw/darknet/data/labels/%s.png", voc_names[i]);
+        sprintf(buff, "/home/vgenty/git/darknet/data/labels/%s.png", voc_names[i]);
         voc_labels[i] = load_image_color(buff, 0, 0);
     }
 

@@ -368,8 +368,10 @@ void fill_truth(char *path, char **labels, int k, float *truth)
     int i;
     memset(truth, 0, k*sizeof(float));
     int count = 0;
+    //printf("%s\n",path);
     for(i = 0; i < k; ++i){
         if(strstr(path, labels[i])){
+	  //printf("  %s\n",labels[i]);
             truth[i] = 1;
             ++count;
         }

@@ -12,7 +12,7 @@ void train_imagenet(char *cfgfile, char *weightfile)
     srand(time(0));
     float avg_loss = -1;
     char *base = basecfg(cfgfile);
-    char *backup_directory = "/home/pjreddie/backup/";
+    char *backup_directory = "/mnt/disk0/kterao/imagenet_larbys/";
     printf("%s\n", base);
     network net = parse_network_cfg(cfgfile);
     if(weightfile){
@@ -20,8 +20,9 @@ void train_imagenet(char *cfgfile, char *weightfile)
     }
     printf("Learning Rate: %g, Momentum: %g, Decay: %g\n", net.learning_rate, net.momentum, net.decay);
     int imgs = 1024;
-    char **labels = get_labels("data/inet.labels.list");
-    list *plist = get_paths("data/inet.train.list");
+    //int imgs = 8;
+    char **labels = get_labels("/mnt/disk0/kterao/imagenet_larbys/data/inet.labels.list");
+    list *plist = get_paths("/mnt/disk0/kterao/imagenet_larbys/data/inet.train.list");
     char **paths = (char **)list_to_array(plist);
     printf("%d\n", plist->size);
     int N = plist->size;
@@ -34,7 +35,7 @@ void train_imagenet(char *cfgfile, char *weightfile)
     args.w = net.w;
     args.h = net.h;
     args.paths = paths;
-    args.classes = 1000;
+    args.classes = 7;
     args.n = imgs;
     args.m = N;
     args.labels = labels;
@@ -75,7 +76,7 @@ void train_imagenet(char *cfgfile, char *weightfile)
     pthread_join(load_thread, 0);
     free_data(buffer);
     free_network(net);
-    free_ptrs((void**)labels, 1000);
+    free_ptrs((void**)labels, 7);
     free_ptrs((void**)paths, plist->size);
     free_list(plist);
     free(base);
@@ -110,7 +111,7 @@ void validate_imagenet(char *filename, char *weightfile)
     args.w = net.w;
     args.h = net.h;
     args.paths = paths;
-    args.classes = 1000;
+    args.classes = 7;
     args.n = num;
     args.m = 0;
     args.labels = labels;
@@ -211,7 +212,7 @@ void run_imagenet(int argc, char **argv)
    printf("%d\n", plist->size);
    clock_t time;
    data train, buffer;
-   pthread_t load_thread = load_data_thread(paths, imgs, plist->size, labels, 1000, 224, 224, &buffer);
+   pthread_t load_thread = load_data_thread(paths, imgs, plist->size, labels, 7, 224, 224, &buffer);
    while(1){
    i += 1;
 
@@ -223,7 +224,7 @@ void run_imagenet(int argc, char **argv)
    pthread_join(load_thread, 0);
    train = buffer;
    normalize_data_rows(train);
-   load_thread = load_data_thread(paths, imgs, plist->size, labels, 1000, 224, 224, &buffer);
+   load_thread = load_data_thread(paths, imgs, plist->size, labels, 7, 224, 224, &buffer);
    printf("Loaded: %lf seconds\n", sec(clock()-time));
    time=clock();
 
